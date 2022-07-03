@@ -4,8 +4,12 @@ import os
 import requests
 import torch
 from label_studio_tools.core.label_config import parse_config
-from transformers import (ElectraForSequenceClassification,
-                          ElectraTokenizerFast, Trainer, TrainingArguments)
+from transformers import (
+    ElectraForSequenceClassification,
+    ElectraTokenizerFast,
+    Trainer,
+    TrainingArguments,
+)
 
 from label_studio_ml.model import LabelStudioMLBase
 
@@ -22,7 +26,7 @@ class ElectraTextClassifier(LabelStudioMLBase):
             self.to_name = self.info["to_name"][0]
             self.value = self.info["inputs"][0]["value"]
             self.labels = sorted(self.info["labels"])
-        except:
+        except BaseException:
             print("Couldn't load label config")
 
         self.tokenizer = ElectraTokenizerFast.from_pretrained(
@@ -44,7 +48,7 @@ class ElectraTextClassifier(LabelStudioMLBase):
             self.to_name = self.info["to_name"][0]
             self.value = self.info["inputs"][0]["value"]
             self.labels = sorted(self.info["labels"])
-        except:
+        except BaseException:
             print("Couldn't load label config")
 
     def predict(self, tasks, **kwargs):

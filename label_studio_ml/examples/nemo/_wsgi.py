@@ -3,6 +3,10 @@ import logging
 import logging.config
 import os
 
+from asr import NemoASR
+
+from label_studio_ml.api import init_app
+
 logging.config.dictConfig(
     {
         "version": 1,
@@ -23,9 +27,6 @@ logging.config.dictConfig(
     }
 )
 
-from asr import NemoASR
-
-from label_studio_ml.api import init_app
 
 _DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 

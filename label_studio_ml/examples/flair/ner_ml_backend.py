@@ -2,7 +2,7 @@ import os
 
 from flair.data import Corpus, Sentence
 from flair.datasets import SentenceDataset
-from flair.embeddings import (FlairEmbeddings, StackedEmbeddings)
+from flair.embeddings import FlairEmbeddings, StackedEmbeddings
 from flair.models import SequenceTagger
 from flair.trainers import ModelTrainer
 
@@ -16,7 +16,8 @@ class SequenceTaggerModel(LabelStudioMLBase):
         super(SequenceTaggerModel, self).__init__(**kwargs)
 
         # you can load in information from your labelling interface
-        # you need this information to load in annotations for fit or make predictions
+        # you need this information to load in annotations for fit or make
+        # predictions
         print("Full parsed labels: ", list(self.parsed_label_config.items()))
         from_name, schema = list(self.parsed_label_config.items())[0]
         self.from_name = from_name  # this is the name of the tagset
@@ -43,7 +44,8 @@ class SequenceTaggerModel(LabelStudioMLBase):
 
     def convert_to_flair_annotation(self, sentence, annotations):
         # convert label-studio annotation to flair annotation (BIO format)
-        # Entities can contain multiple tokens in this format f.e. George Washington => Person
+        # Entities can contain multiple tokens in this format f.e. George
+        # Washington => Person
         for token in sentence:
             for tag in annotations[0]["result"]:
                 start = tag["value"].get("start")
@@ -65,7 +67,8 @@ class SequenceTaggerModel(LabelStudioMLBase):
         return sentence
 
     def convert_to_ls_annotation(self, flair_sentences):
-        # convert annotations in flair sentences object to labelstudio annotations
+        # convert annotations in flair sentences object to labelstudio
+        # annotations
         results = []
         for sent in flair_sentences:
             sent_preds = []  # all predictions results for one sentence = one task
@@ -88,7 +91,8 @@ class SequenceTaggerModel(LabelStudioMLBase):
                 # add score
                 scores_sent.append(float(ent["labels"][0].score))
 
-            # add minimum of certaincy scores of entities in sentence for active learning use
+            # add minimum of certaincy scores of entities in sentence for
+            # active learning use
             score = min(scores_sent) if len(scores_sent) > 0 else float(2.0)
             results.append({"result": sent_preds, "score": score})
 

@@ -13,18 +13,28 @@ from tensorboardX import SummaryWriter
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm, trange
-from transformers import (BERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
-                          DISTILBERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
-                          ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP, AdamW,
-                          AutoConfig, AutoModelForTokenClassification,
-                          AutoTokenizer, BertConfig,
-                          BertForTokenClassification, BertTokenizer,
-                          CamembertConfig, CamembertForTokenClassification,
-                          CamembertTokenizer, DistilBertConfig,
-                          DistilBertForTokenClassification,
-                          DistilBertTokenizer, RobertaConfig,
-                          RobertaForTokenClassification, RobertaTokenizer,
-                          get_linear_schedule_with_warmup)
+from transformers import (
+    BERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
+    DISTILBERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
+    ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP,
+    AdamW,
+    AutoConfig,
+    AutoModelForTokenClassification,
+    AutoTokenizer,
+    BertConfig,
+    BertForTokenClassification,
+    BertTokenizer,
+    CamembertConfig,
+    CamembertForTokenClassification,
+    CamembertTokenizer,
+    DistilBertConfig,
+    DistilBertForTokenClassification,
+    DistilBertTokenizer,
+    RobertaConfig,
+    RobertaForTokenClassification,
+    RobertaTokenizer,
+    get_linear_schedule_with_warmup,
+)
 
 from label_studio_ml.model import LabelStudioMLBase
 from utils import calc_slope
@@ -160,7 +170,8 @@ class SpanLabeledTextDataset(Dataset):
             word_tokens = self.tokenizer.tokenize(word)
             tokens.extend(word_tokens)
             tokens_idx_map.extend([token_start] * len(word_tokens))
-            # Use the real label id for the first token of the word, and padding ids for the remaining tokens
+            # Use the real label id for the first token of the word, and
+            # padding ids for the remaining tokens
             label_ids.extend(
                 [label_map[label]] + [self.pad_token_label_id] * (len(word_tokens) - 1)
             )
@@ -265,7 +276,8 @@ class SpanLabeledTextDataset(Dataset):
                         continue
 
                     # token jumps over the span (it could happens
-                    # when prev label ends with whitespaces, e.g. "cat " "too" or span created for whitespace)
+                    # when prev label ends with whitespaces, e.g. "cat " "too"
+                    # or span created for whitespace)
                     if token_start > span["end"]:
 
                         prefix = "B-"

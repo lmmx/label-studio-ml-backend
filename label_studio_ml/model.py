@@ -34,8 +34,7 @@ from label_studio_tools.core.utils.params import get_bool_env
 from redis import Redis
 from rq import Queue, get_current_job
 from rq.job import Job
-from rq.registry import (FailedJobRegistry, FinishedJobRegistry,
-                         StartedJobRegistry)
+from rq.registry import FailedJobRegistry, FinishedJobRegistry, StartedJobRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +61,7 @@ class JobManager(object):
             except Exception as exc:
                 logger.error(exc, exc_info=True)
         else:
-            logger.debug(f"Get result from last valid job")
+            logger.debug("Get result from last valid job")
             job_result = self.get_result_from_last_job()
         return job_result or {}
 
@@ -557,7 +556,8 @@ class LabelStudioMLManager(object):
         version=None,
         **kwargs,
     ):
-        # reload new model if model is not loaded into memory OR force_reload=True OR model versions are mismatched
+        # reload new model if model is not loaded into memory OR
+        # force_reload=True OR model versions are mismatched
         if (
             not cls.has_active_model(project)
             or force_reload
@@ -765,7 +765,7 @@ class LabelStudioMLManager(object):
                     fout.write(job_result)
             if not cls.without_redis():
                 cls._redis.rpush(cls._get_job_results_key(project), job_result)
-        except:
+        except BaseException:
             raise
         finally:
             m.is_training = False

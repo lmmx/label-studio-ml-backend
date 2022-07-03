@@ -47,7 +47,8 @@ def _setup():
     hostname = data.get(
         "hostname", ""
     )  # host name for uploaded files and building urls
-    access_token = data.get("access_token", "")  # user access token to retrieve data
+    # user access token to retrieve data
+    access_token = data.get("access_token", "")
     model = _manager.fetch(
         project, schema, force_reload, hostname=hostname, access_token=access_token
     )

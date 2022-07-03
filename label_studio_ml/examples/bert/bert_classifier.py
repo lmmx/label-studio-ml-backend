@@ -4,10 +4,14 @@ from collections import deque
 import numpy as np
 import torch
 from tensorboardX import SummaryWriter
-from torch.utils.data import (RandomSampler, SequentialSampler)
+from torch.utils.data import RandomSampler, SequentialSampler
 from tqdm import tqdm, trange
-from transformers import (AdamW, BertForSequenceClassification, BertTokenizer,
-                          get_linear_schedule_with_warmup)
+from transformers import (
+    AdamW,
+    BertForSequenceClassification,
+    BertTokenizer,
+    get_linear_schedule_with_warmup,
+)
 
 from label_studio_ml.model import LabelStudioMLBase
 from utils import calc_slope, prepare_texts

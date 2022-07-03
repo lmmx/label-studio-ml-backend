@@ -3,6 +3,9 @@ import logging
 import logging.config
 import os
 
+from label_studio_ml.api import init_app
+from model import MyModel
+
 logging.config.dictConfig(
     {
         "version": 1,
@@ -23,8 +26,6 @@ logging.config.dictConfig(
     }
 )
 
-from label_studio_ml.api import init_app
-from model import MyModel
 
 _DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 

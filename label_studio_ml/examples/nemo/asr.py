@@ -16,7 +16,8 @@ class NemoASR(LabelStudioMLBase):
         # Find TextArea control tag and bind ASR model to it
         self.from_name, self.to_name, self.value = self._bind_to_textarea()
 
-        # This line will download pre-trained QuartzNet15x5 model from NVIDIA's NGC cloud and instantiate it for you
+        # This line will download pre-trained QuartzNet15x5 model from NVIDIA's
+        # NGC cloud and instantiate it for you
         self.model = nemo_asr.models.EncDecCTCModel.from_pretrained(
             model_name=model_name
         )

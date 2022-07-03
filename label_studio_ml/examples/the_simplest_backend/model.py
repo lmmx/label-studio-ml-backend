@@ -26,7 +26,8 @@ class MyModel(LabelStudioMLBase):
 
         :param tasks: Label Studio tasks in JSON format
         """
-        # self.train_output is a dict that stores the latest result returned by fit() method
+        # self.train_output is a dict that stores the latest result returned by
+        # fit() method
         if self.train_output:
             prediction_result_example = self.train_output["prediction_example"]
             output_prediction = [

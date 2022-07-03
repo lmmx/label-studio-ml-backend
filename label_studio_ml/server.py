@@ -183,7 +183,8 @@ def start_server(args, subprocess_params):
 def deploy_to_gcp(args):
     # create project with
     create_dir(args)
-    # prepare params for gcloud: dir with script, project id, region and service name
+    # prepare params for gcloud: dir with script, project id, region and
+    # service name
     output_dir = os.path.join(args.root_dir, args.project_name)
     project_id = args.gcp_project or os.environ.get("GCP_PROJECT")
     if not project_id:

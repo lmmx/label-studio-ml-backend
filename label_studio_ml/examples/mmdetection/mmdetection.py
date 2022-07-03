@@ -10,8 +10,11 @@ from label_studio_tools.core.utils.io import get_data_dir
 from mmdet.apis import inference_detector, init_detector
 
 from label_studio_ml.model import LabelStudioMLBase
-from label_studio_ml.utils import (DATA_UNDEFINED_NAME, get_image_size,
-                                   get_single_tag_keys)
+from label_studio_ml.utils import (
+    DATA_UNDEFINED_NAME,
+    get_image_size,
+    get_single_tag_keys,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +69,8 @@ class MMDetection(LabelStudioMLBase):
         schema = list(self.parsed_label_config.values())[0]
         self.labels_in_config = set(self.labels_in_config)
 
-        # Collect label maps from `predicted_values="airplane,car"` attribute in <Label> tag
+        # Collect label maps from `predicted_values="airplane,car"` attribute
+        # in <Label> tag
         self.labels_attrs = schema.get("labels_attrs")
         if self.labels_attrs:
             for label_name, label_attrs in self.labels_attrs.items():

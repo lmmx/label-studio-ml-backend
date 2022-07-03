@@ -34,7 +34,8 @@ class DialoGPTSimpleGenerator(LabelStudioMLBase):
 
         input_ids = self.tokenizer.encode(entire_dialog, return_tensors="pt")
 
-        # generated a response while limiting the total chat history to 1000 tokens,
+        # generated a response while limiting the total chat history to 1000
+        # tokens,
         chat_history_ids = self.model.generate(
             input_ids,
             max_length=1000,
