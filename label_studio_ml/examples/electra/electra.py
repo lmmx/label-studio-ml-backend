@@ -117,22 +117,16 @@ class ElectraTextClassifier(LabelStudioMLBase):
             output_label_idx = self.labels.index(output_label)
             output_label_idx = torch.tensor([[output_label_idx]], dtype=torch.int)
             input_labels.append(output_label_idx)
-
         print(f"Train dataset length: {len(tasks)}")
-
         my_dataset = Custom_Dataset((input_texts, input_labels))
-
         trainer = Trainer(
             model=self.model,
             args=training_args,
             train_dataset=my_dataset,
             # eval_dataset=small_eval_dataset
         )
-
         trainer.train()
-
         self.model.save_pretrained(MODEL_FILE)
-
         train_output = {"labels": self.labels, "model_file": MODEL_FILE}
         return train_output
 
