@@ -142,6 +142,11 @@ class ElectraTextClassifier(LabelStudioMLBase):
         response = requests.get(
             download_url, headers={"Authorization": f"Token {API_KEY}"}
         )
+        if response.status_code != 200:
+            raise Exception(
+                f"Can't load task data using {download_url}, "
+                f"response status_code = {response.status_code}"
+            )
         return json.loads(response.content)
 
     def _get_text_from_s3(self, url):
