@@ -1,7 +1,7 @@
-import os
 import argparse
 import logging
 import logging.config
+import os
 
 logging.config.dictConfig(
     {
@@ -25,7 +25,6 @@ logging.config.dictConfig(
 
 from label_studio_ml.api import init_app
 from model import MyModel
-
 
 _DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 

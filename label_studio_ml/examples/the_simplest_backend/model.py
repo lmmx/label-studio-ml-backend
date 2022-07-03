@@ -1,11 +1,10 @@
-import os
 import json
+import os
 import random
+
 import label_studio_sdk
 
-
 from label_studio_ml.model import LabelStudioMLBase
-
 
 LABEL_STUDIO_HOST = os.getenv("LABEL_STUDIO_HOST", "http://localhost:8000")
 LABEL_STUDIO_API_KEY = os.getenv(

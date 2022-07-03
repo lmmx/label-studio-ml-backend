@@ -1,25 +1,17 @@
+import os
+import time
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import time
-import os
-import numpy as np
-import requests
-import io
-import hashlib
-import urllib
-
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 from torchvision import models, transforms
 
 from label_studio_ml.model import LabelStudioMLBase
-from label_studio_ml.utils import (
-    get_single_tag_keys,
-    get_choice,
-    is_skipped,
-    get_local_path,
-)
+from label_studio_ml.utils import (get_choice, get_local_path,
+                                   get_single_tag_keys, is_skipped)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

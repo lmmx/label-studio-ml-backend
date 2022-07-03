@@ -1,19 +1,16 @@
-import torch
-import numpy as np
 import os
-
-from torch.utils.data import SequentialSampler
-from tqdm import tqdm, trange
 from collections import deque
+
+import numpy as np
+import torch
 from tensorboardX import SummaryWriter
-from transformers import BertTokenizer, BertForSequenceClassification
-from transformers import AdamW, get_linear_schedule_with_warmup
-from torch.utils.data import TensorDataset, DataLoader, RandomSampler
+from torch.utils.data import (RandomSampler, SequentialSampler)
+from tqdm import tqdm, trange
+from transformers import (AdamW, BertForSequenceClassification, BertTokenizer,
+                          get_linear_schedule_with_warmup)
 
 from label_studio_ml.model import LabelStudioMLBase
-
-from utils import prepare_texts, calc_slope
-
+from utils import calc_slope, prepare_texts
 
 if torch.cuda.is_available():
     device = torch.device("cuda")

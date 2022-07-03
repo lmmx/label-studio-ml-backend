@@ -1,8 +1,10 @@
-from PIL import Image
+import logging
+
 import pytesseract as pt
+from PIL import Image
+
 from label_studio_ml.model import LabelStudioMLBase
 from label_studio_ml.utils import get_image_local_path
-import logging
 
 logger = logging.getLogger(__name__)
 global OCR_config

@@ -1,14 +1,13 @@
-import torch
-import requests
 import json
 import os
 
-from transformers import ElectraTokenizerFast, ElectraForSequenceClassification
-from transformers import Trainer
-from transformers import TrainingArguments
+import requests
+import torch
+from label_studio_tools.core.label_config import parse_config
+from transformers import (ElectraForSequenceClassification,
+                          ElectraTokenizerFast, Trainer, TrainingArguments)
 
 from label_studio_ml.model import LabelStudioMLBase
-from label_studio_tools.core.label_config import parse_config
 
 HOSTNAME = "https://app.heartex.com/"
 API_KEY = ""

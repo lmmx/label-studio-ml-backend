@@ -1,44 +1,33 @@
-import torch
-import numpy as np
-import re
-import os
 import io
 import logging
-
+import os
+import re
+from collections import deque
 from functools import partial
 from itertools import groupby
 from operator import itemgetter
-from torch.nn import CrossEntropyLoss
-from torch.utils.data import Dataset, DataLoader
-from tqdm import tqdm, trange
-from tensorboardX import SummaryWriter
-from collections import deque
 
-from transformers import (
-    BertTokenizer,
-    BertForTokenClassification,
-    BertConfig,
-    RobertaConfig,
-    RobertaForTokenClassification,
-    RobertaTokenizer,
-    DistilBertConfig,
-    DistilBertForTokenClassification,
-    DistilBertTokenizer,
-    CamembertConfig,
-    CamembertForTokenClassification,
-    CamembertTokenizer,
-    AutoConfig,
-    AutoModelForTokenClassification,
-    AutoTokenizer,
-    BERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
-    ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP,
-    DISTILBERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
-)
-from transformers import AdamW, get_linear_schedule_with_warmup
+import numpy as np
+import torch
+from tensorboardX import SummaryWriter
+from torch.nn import CrossEntropyLoss
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm, trange
+from transformers import (BERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
+                          DISTILBERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
+                          ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP, AdamW,
+                          AutoConfig, AutoModelForTokenClassification,
+                          AutoTokenizer, BertConfig,
+                          BertForTokenClassification, BertTokenizer,
+                          CamembertConfig, CamembertForTokenClassification,
+                          CamembertTokenizer, DistilBertConfig,
+                          DistilBertForTokenClassification,
+                          DistilBertTokenizer, RobertaConfig,
+                          RobertaForTokenClassification, RobertaTokenizer,
+                          get_linear_schedule_with_warmup)
 
 from label_studio_ml.model import LabelStudioMLBase
 from utils import calc_slope
-
 
 logger = logging.getLogger(__name__)
 

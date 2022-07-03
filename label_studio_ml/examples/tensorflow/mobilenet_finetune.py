@@ -1,17 +1,14 @@
-import os
 import logging
+import os
+
+import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
-import numpy as np
-
 from PIL import Image
+
 from label_studio_ml.model import LabelStudioMLBase
-from label_studio_ml.utils import (
-    get_image_local_path,
-    get_single_tag_keys,
-    get_choice,
-    is_skipped,
-)
+from label_studio_ml.utils import (get_choice, get_image_local_path,
+                                   get_single_tag_keys, is_skipped)
 
 logger = logging.getLogger(__name__)
 feature_extractor_model = (

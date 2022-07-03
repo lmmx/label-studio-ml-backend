@@ -1,7 +1,6 @@
-import torch
 import numpy as np
-
-from torch.utils.data import TensorDataset, DataLoader
+import torch
+from torch.utils.data import DataLoader, TensorDataset
 
 
 def pad_sequences(input_ids, maxlen):

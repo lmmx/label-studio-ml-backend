@@ -1,5 +1,5 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
 from lxml import etree
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from label_studio_ml.model import LabelStudioMLBase
 from label_studio_ml.utils import get_single_tag_keys

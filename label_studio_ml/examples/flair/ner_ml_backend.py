@@ -1,17 +1,13 @@
-from flair.datasets import SentenceDataset
-from flair.data import Corpus, Sentence
+import os
 
-from flair.embeddings import (
-    TokenEmbeddings,
-    WordEmbeddings,
-    StackedEmbeddings,
-    FlairEmbeddings,
-)
+from flair.data import Corpus, Sentence
+from flair.datasets import SentenceDataset
+from flair.embeddings import (FlairEmbeddings, StackedEmbeddings)
 from flair.models import SequenceTagger
 from flair.trainers import ModelTrainer
+
 from label_studio_ml.model import LabelStudioMLBase
 
-import os
 
 # writing class with inheretance
 class SequenceTaggerModel(LabelStudioMLBase):

@@ -1,11 +1,10 @@
-import os
 import logging
-import nemo
+import os
+
 import nemo.collections.asr as nemo_asr
 
 from label_studio_ml.model import LabelStudioMLBase
 from label_studio_ml.utils import DATA_UNDEFINED_NAME
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,21 +1,17 @@
-import os
-import logging
-import boto3
 import io
 import json
-
-from mmdet.apis import init_detector, inference_detector
-
-from label_studio_ml.model import LabelStudioMLBase
-from label_studio_ml.utils import (
-    get_image_size,
-    get_single_tag_keys,
-    DATA_UNDEFINED_NAME,
-)
-from label_studio_tools.core.utils.io import get_data_dir
-from botocore.exceptions import ClientError
+import logging
+import os
 from urllib.parse import urlparse
 
+import boto3
+from botocore.exceptions import ClientError
+from label_studio_tools.core.utils.io import get_data_dir
+from mmdet.apis import inference_detector, init_detector
+
+from label_studio_ml.model import LabelStudioMLBase
+from label_studio_ml.utils import (DATA_UNDEFINED_NAME, get_image_size,
+                                   get_single_tag_keys)
 
 logger = logging.getLogger(__name__)
 

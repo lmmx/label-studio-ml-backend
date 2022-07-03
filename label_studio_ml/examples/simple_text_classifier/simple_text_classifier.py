@@ -1,17 +1,16 @@
-import pickle
-import os
-import numpy as np
-import requests
 import json
+import os
+import pickle
 from uuid import uuid4
 
-from sklearn.linear_model import LogisticRegression
+import numpy as np
+import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 
 from label_studio_ml.model import LabelStudioMLBase
 from label_studio_ml.utils import DATA_UNDEFINED_NAME, get_env
-
 
 HOSTNAME = get_env("HOSTNAME", "http://localhost:8080")
 API_KEY = get_env("API_KEY")

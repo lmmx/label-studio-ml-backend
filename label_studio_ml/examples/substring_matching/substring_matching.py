@@ -1,11 +1,12 @@
+import functools
 import logging
+import random
 import re
+import string
+
+import requests
 
 from label_studio_ml.model import LabelStudioMLBase
-import random
-import string
-import functools
-import requests
 
 logger = logging.getLogger(__name__)
 
