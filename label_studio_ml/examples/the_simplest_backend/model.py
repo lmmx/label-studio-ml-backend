@@ -59,7 +59,7 @@ class MyModel(LabelStudioMLBase):
         """
         if "data" not in kwargs:
             raise KeyError(
-                f'Project is not identified. Go to Project Settings -> Webhooks, and ensure you have "Send Payload" enabled'
+                'Project is not identified. Go to Project Settings -> Webhooks, and ensure you have "Send Payload" enabled'
             )
         data = kwargs["data"]
         project = data["project"]["id"]

@@ -1,11 +1,12 @@
-import json
 import argparse
+import json
 import logging
 import logging.config
 import os
 
-from label_studio_ml.api import init_app
 from model import MyModel
+
+from label_studio_ml.api import init_app
 
 logging.config.dictConfig(
     {

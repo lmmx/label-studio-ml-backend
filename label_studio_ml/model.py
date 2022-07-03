@@ -603,7 +603,7 @@ class LabelStudioMLManager(object):
                     model=model, model_version=job_result["job_id"]
                 )
             else:
-                logger.debug(f"Job result not found: create initial model")
+                logger.debug("Job result not found: create initial model")
                 model = cls.model_class(label_config=label_config, **kwargs)
                 cls._current_model = ModelWrapper(model=model, model_version="INITIAL")
         return cls._current_model

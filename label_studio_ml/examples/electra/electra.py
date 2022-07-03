@@ -129,7 +129,7 @@ class ElectraTextClassifier(LabelStudioMLBase):
             # eval_dataset=small_eval_dataset
         )
 
-        result = trainer.train()
+        trainer.train()
 
         self.model.save_pretrained(MODEL_FILE)
 

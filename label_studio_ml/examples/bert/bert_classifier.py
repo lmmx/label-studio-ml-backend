@@ -12,9 +12,9 @@ from transformers import (
     BertTokenizer,
     get_linear_schedule_with_warmup,
 )
+from utils import calc_slope, prepare_texts
 
 from label_studio_ml.model import LabelStudioMLBase
-from utils import calc_slope, prepare_texts
 
 if torch.cuda.is_available():
     device = torch.device("cuda")

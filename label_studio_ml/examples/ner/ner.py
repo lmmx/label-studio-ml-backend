@@ -35,9 +35,9 @@ from transformers import (
     RobertaTokenizer,
     get_linear_schedule_with_warmup,
 )
+from utils import calc_slope
 
 from label_studio_ml.model import LabelStudioMLBase
-from utils import calc_slope
 
 logger = logging.getLogger(__name__)
 
