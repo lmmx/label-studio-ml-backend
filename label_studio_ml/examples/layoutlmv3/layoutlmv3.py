@@ -1,13 +1,14 @@
 import json
 import logging
 from pathlib import Path
+from typing import Type
 
 import requests
 import torch
 from label_studio_tools.core.label_config import parse_config
 from transformers import (
     LayoutLMv3Processor,
-    ElectraForSequenceClassification,
+    LayoutLMv3ForTokenClassification,
     Trainer,
     TrainingArguments,
 )
@@ -17,6 +18,7 @@ from label_studio_ml.utils import DATA_UNDEFINED_NAME, get_env
 
 HOSTNAME = get_env("HOSTNAME", "http://localhost:8080")
 API_KEY = get_env("API_KEY")
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 logger.info("=> LABEL STUDIO HOSTNAME = ", HOSTNAME)
 if not API_KEY:
@@ -27,20 +29,45 @@ MODEL_FILE = "my_model"
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 class LayoutLMv3Classifier(LabelStudioMLBase):
     control_type: str = "RectangleLabels"
     object_type: str = "Image"
-    hf_model_name: str = "google/electra-small-discriminator"
-    hf_processor_name: str = "microsoft/layoutlmv3-base"
-    hf_model_class: type = ElectraForSequenceClassification
-    hf_processor_class: type = LayoutLMv3Processor
+    hf_hub_name: str = "microsoft/layoutlmv3-base"
+    hf_model_cls: Type = LayoutLMv3ForTokenClassification
+    hf_processor_cls: Type = LayoutLMv3Processor
 
     def __init__(self, **kwargs):
         super(LayoutLMv3Classifier, self).__init__(**kwargs)
         self.load_config()
-        self.processor = self.tokenizer_class.from_pretrained(self.hf_processor_name)
-        model_name = MODEL_FILE if Path(MODEL_FILE).exists() else self.hf_model_name
-        self.model = self.hf_model_class.from_pretrained(model_name)
+        self.processor = self.tokenizer_cls.from_pretrained(self.hf_hub_name)
+        if not self.train_output:
+            self.labels = self.info["labels"]
+            self.reset_model()
+            load_repr = "Initialised with"
+        else:
+            self.load(self.train_output)
+            load_repr = f"Loaded from train output with"
+        logger.info(f"{load_repr} {self.from_name=}, {self.to_name=}, {self.labels=!s}")
+
+    def _load_model(self, name_or_path: str) -> None:
+        assert hasattr(self, "labels"), "Loading model requires labels to be set first"
+        self.model = self.hf_model_cls.from_pretrained(
+            name_or_path,
+            num_labels=len(self.labels),
+        )
+        self.model.to(DEVICE)
+        return
+
+    def reset_model(self) -> None:
+        return self._load_model(name_or_path=self.hf_hub_name)
+
+    def load(self, train_output) -> None:
+        self.labels = train_output["labels"]
+        self._load_model(name_or_path=train_output["model_path"])
+        self.model.eval()
+        self.batch_size = train_output["batch_size"]  # TODO: review use in `predict`
+        self.maxlen = train_output["maxlen"]  # TODO: ditto (source: BERT backend)
 
     def load_config(self):
         if not self.parsed_label_config:
@@ -52,7 +79,9 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
                 object_type=self.object_type,
             )
         except BaseException:
-            logger.error(f"Couldn't load config from parsed_label_config", exc_info=True)
+            logger.error(
+                f"Couldn't load config from parsed_label_config", exc_info=True
+            )
 
     def predict(self, tasks, **kwargs):
         # get data for prediction from tasks
@@ -95,7 +124,9 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
             project_id = kwargs["data"]["project"]["id"]
             tasks = self._get_annotated_dataset(project_id)
             if not self.parsed_label_config:
-                self.parsed_label_config = parse_config(kwargs["data"]["project"]["label_config"])
+                self.parsed_label_config = parse_config(
+                    kwargs["data"]["project"]["label_config"]
+                )
                 self.load_config()
         # ML training without web hook
         else:
