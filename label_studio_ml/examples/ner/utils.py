@@ -15,7 +15,9 @@ def pad_sequences(input_ids, maxlen):
     return padded_ids
 
 
-def prepare_texts(texts, tokenizer, maxlen, sampler_class, batch_size, choices_ids=None):
+def prepare_texts(
+    texts, tokenizer, maxlen, sampler_class, batch_size, choices_ids=None
+):
     # create input token indices
     input_ids = []
     for text in texts:
@@ -28,9 +30,16 @@ def prepare_texts(texts, tokenizer, maxlen, sampler_class, batch_size, choices_i
         attention_masks.append([int(token_id > 0) for token_id in sent])
 
     if choices_ids is not None:
-        dataset = TensorDataset(torch.tensor(input_ids, dtype=torch.long), torch.tensor(attention_masks, dtype=torch.long), torch.tensor(choices_ids, dtype=torch.long))
+        dataset = TensorDataset(
+            torch.tensor(input_ids, dtype=torch.long),
+            torch.tensor(attention_masks, dtype=torch.long),
+            torch.tensor(choices_ids, dtype=torch.long),
+        )
     else:
-        dataset = TensorDataset(torch.tensor(input_ids, dtype=torch.long), torch.tensor(attention_masks, dtype=torch.long))
+        dataset = TensorDataset(
+            torch.tensor(input_ids, dtype=torch.long),
+            torch.tensor(attention_masks, dtype=torch.long),
+        )
     sampler = sampler_class(dataset)
     dataloader = DataLoader(dataset, sampler=sampler, batch_size=batch_size)
     return dataloader
@@ -39,7 +48,7 @@ def prepare_texts(texts, tokenizer, maxlen, sampler_class, batch_size, choices_i
 def calc_slope(y):
     n = len(y)
     if n == 1:
-        raise ValueError('Can\'t compute slope for array of length=1')
+        raise ValueError("Can't compute slope for array of length=1")
     x_mean = (n + 1) / 2
     x2_mean = (n + 1) * (2 * n + 1) / 6
     xy_mean = np.average(y, weights=np.arange(1, n + 1))
