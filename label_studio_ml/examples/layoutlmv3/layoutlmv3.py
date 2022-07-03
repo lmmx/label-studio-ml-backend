@@ -1,12 +1,13 @@
 import json
-import os
+import logging
+from pathlib import Path
 
 import requests
 import torch
 from label_studio_tools.core.label_config import parse_config
 from transformers import (
+    LayoutLMv3Processor,
     ElectraForSequenceClassification,
-    ElectraTokenizerFast,
     Trainer,
     TrainingArguments,
 )
@@ -17,45 +18,41 @@ from label_studio_ml.utils import DATA_UNDEFINED_NAME, get_env
 HOSTNAME = get_env("HOSTNAME", "http://localhost:8080")
 API_KEY = get_env("API_KEY")
 
-print("=> LABEL STUDIO HOSTNAME = ", HOSTNAME)
+logger.info("=> LABEL STUDIO HOSTNAME = ", HOSTNAME)
 if not API_KEY:
-    print("=> WARNING! API_KEY is not set")
+    logger.warning("=> WARNING! API_KEY is not set")
 
 MODEL_FILE = "my_model"
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-class ElectraTextClassifier(LabelStudioMLBase):
+class LayoutLMv3Classifier(LabelStudioMLBase):
+    control_type: str = "RectangleLabels"
+    object_type: str = "Image"
+    hf_model_name: str = "google/electra-small-discriminator"
+    hf_processor_name: str = "microsoft/layoutlmv3-base"
+    hf_model_class: type = ElectraForSequenceClassification
+    hf_processor_class: type = LayoutLMv3Processor
+
     def __init__(self, **kwargs):
-        super(ElectraTextClassifier, self).__init__(**kwargs)
-        try:
-            self.from_name, self.info = list(self.parsed_label_config.items())[0]
-            self.to_name = self.info["to_name"][0]
-            self.value = self.info["inputs"][0]["value"]
-            self.labels = sorted(self.info["labels"])
-        except BaseException:
-            print("Couldn't load label config")
+        super(LayoutLMv3Classifier, self).__init__(**kwargs)
+        self.load_config()
+        self.processor = self.tokenizer_class.from_pretrained(self.hf_processor_name)
+        model_name = MODEL_FILE if Path(MODEL_FILE).exists() else self.hf_model_name
+        self.model = self.hf_model_class.from_pretrained(model_name)
 
-        self.tokenizer = ElectraTokenizerFast.from_pretrained(
-            "google/electra-small-discriminator"
-        )
-
-        if os.path.exists(MODEL_FILE):
-            self.model = ElectraForSequenceClassification.from_pretrained("my_model")
-        else:
-            self.model = ElectraForSequenceClassification.from_pretrained(
-                "google/electra-small-discriminator"
-            )
-
-    def load_config(self, config):
+    def load_config(self):
         if not self.parsed_label_config:
-            self.parsed_label_config = parse_config(config)
+            raise ValueError("The parsed_label_config attribute is not set")
         try:
-            self.from_name, self.info = list(self.parsed_label_config.items())[0]
-            self.to_name = self.info["to_name"][0]
-            self.value = self.info["inputs"][0]["value"]
-            self.labels = sorted(self.info["labels"])
+            self.from_name, self.to_name, self.value, self.labels = get_single_tag_keys(
+                self.parsed_label_config,
+                control_type=self.control_type,
+                object_type=self.object_type,
+            )
         except BaseException:
-            print("Couldn't load label config")
+            logger.error(f"Couldn't load config from parsed_label_config", exc_info=True)
 
     def predict(self, tasks, **kwargs):
         # get data for prediction from tasks
@@ -98,7 +95,8 @@ class ElectraTextClassifier(LabelStudioMLBase):
             project_id = kwargs["data"]["project"]["id"]
             tasks = self._get_annotated_dataset(project_id)
             if not self.parsed_label_config:
-                self.load_config(kwargs["data"]["project"]["label_config"])
+                self.parsed_label_config = parse_config(kwargs["data"]["project"]["label_config"])
+                self.load_config()
         # ML training without web hook
         else:
             tasks = completions
