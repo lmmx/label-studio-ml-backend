@@ -12,9 +12,15 @@ from transformers import (
 )
 
 from label_studio_ml.model import LabelStudioMLBase
+from label_studio_ml.utils import DATA_UNDEFINED_NAME, get_env
 
-HOSTNAME = "https://app.heartex.com/"
-API_KEY = ""
+HOSTNAME = get_env("HOSTNAME", "http://localhost:8080")
+API_KEY = get_env("API_KEY")
+
+print("=> LABEL STUDIO HOSTNAME = ", HOSTNAME)
+if not API_KEY:
+    print("=> WARNING! API_KEY is not set")
+
 MODEL_FILE = "my_model"
 
 
