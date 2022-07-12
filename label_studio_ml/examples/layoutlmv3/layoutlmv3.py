@@ -1,9 +1,6 @@
-import json
 import logging
-from pathlib import Path
 from typing import Type
 
-import requests
 import torch
 from label_studio_tools.core.label_config import parse_config
 from transformers import (
@@ -14,20 +11,23 @@ from transformers import (
 )
 
 from label_studio_ml.model import LabelStudioMLBase
-from label_studio_ml.utils import DATA_UNDEFINED_NAME, get_env
 
-HOSTNAME = get_env("HOSTNAME", "http://localhost:8080")
-API_KEY = get_env("API_KEY")
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-logger.info("=> LABEL STUDIO HOSTNAME = ", HOSTNAME)
-if not API_KEY:
-    logger.warning("=> WARNING! API_KEY is not set")
-
-MODEL_FILE = "my_model"
+# TODO break these out further
+from label_studio_ml.utils import get_single_tag_keys
+from label_studio_ml.examples.layoutlmv3.components import (
+    DEVICE,
+    MODEL_FILE,
+    Custom_Dataset,
+    PredictionResult,
+)
+from label_studio_ml.examples.layoutlmv3.ls_api import get_annotated_dataset
+from label_studio_ml.examples.layoutlmv3.detection import make_predictions
+from label_studio_ml.examples.layoutlmv3.url_utils import load_image_from_url
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+__all__ = ["LayoutLMv3Classifier"]
 
 
 class LayoutLMv3Classifier(LabelStudioMLBase):
@@ -36,6 +36,8 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
     hf_hub_name: str = "microsoft/layoutlmv3-base"
     hf_model_cls: Type = LayoutLMv3ForTokenClassification
     hf_processor_cls: Type = LayoutLMv3Processor
+    detection_source: str = f"${object_type}".lower()
+    detection_type: str = control_type.lower()
 
     def __init__(self, **kwargs):
         super(LayoutLMv3Classifier, self).__init__(**kwargs)
@@ -47,7 +49,7 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
             load_repr = "Initialised with"
         else:
             self.load(self.train_output)
-            load_repr = f"Loaded from train output with"
+            load_repr = "Loaded from train output with"
         logger.info(f"{load_repr} {self.from_name=}, {self.to_name=}, {self.labels=!s}")
 
     def _load_model(self, name_or_path: str) -> None:
@@ -62,7 +64,7 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
     def reset_model(self) -> None:
         return self._load_model(name_or_path=self.hf_hub_name)
 
-    def load(self, train_output) -> None:
+    def load(self, train_output: dict) -> None:
         self.labels = train_output["labels"]
         self._load_model(name_or_path=train_output["model_path"])
         self.model.eval()
@@ -79,50 +81,25 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
                 object_type=self.object_type,
             )
         except BaseException:
-            logger.error(
-                f"Couldn't load config from parsed_label_config", exc_info=True
-            )
+            logger.error("Couldn't load parsed_label_config", exc_info=True)
+        return
 
-    def predict(self, tasks, **kwargs):
+    def load_images_from_urls(image_urls: list):
+        # TODO: change this to paths / check how load_image_from_url works in Detectron2
+        return [load_image_from_url(url) for url in image_urls]
+
+    def predict(self, tasks, **kwargs) -> list[PredictionResult]:
         # get data for prediction from tasks
-        final_results = []
-        for task in tasks:
-            input_texts = ""
-            input_text = task["data"].get(self.value)
-            if input_text.startswith("http://"):
-                input_text = self._get_text_from_s3(input_text)
-            input_texts += input_text
-
-            labels = torch.tensor([1], dtype=torch.long)
-            # tokenize data
-            input_ids = torch.tensor(
-                self.tokenizer.encode(input_texts, add_special_tokens=True)
-            ).unsqueeze(0)
-            # predict label
-            predictions = self.model(input_ids, labels=labels).logits
-            predictions = torch.softmax(predictions.flatten(), 0)
-            label_count = torch.argmax(predictions).item()
-            final_results.append(
-                {
-                    "result": [
-                        {
-                            "from_name": self.from_name,
-                            "to_name": self.to_name,
-                            "type": "choices",
-                            "value": {"choices": [self.labels[label_count]]},
-                        }
-                    ],
-                    "task": task["id"],
-                    "score": predictions.flatten().tolist()[label_count],
-                }
-            )
-        return final_results
+        image_urls = [task["data"][self.value] for task in tasks]
+        task_ids = [task["id"] for task in tasks]
+        images = self.load_images_from_urls(image_urls)
+        return make_predictions(backend=self, images=images, task_ids=task_ids)
 
     def fit(self, completions, workdir=None, **kwargs):
         # check if training is from web hook
         if kwargs.get("data"):
             project_id = kwargs["data"]["project"]["id"]
-            tasks = self._get_annotated_dataset(project_id)
+            tasks = get_annotated_dataset(project_id)
             if not self.parsed_label_config:
                 self.parsed_label_config = parse_config(
                     kwargs["data"]["project"]["label_config"]
@@ -142,8 +119,6 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
             if not task.get("annotations"):
                 continue
             input_text = task["data"].get(self.value)
-            if input_text.startswith("http://"):
-                input_text = self._get_text_from_s3(input_text)
             input_texts.append(
                 torch.flatten(self.tokenizer.encode(input_text, return_tensors="pt"))
             )
@@ -164,32 +139,3 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
         self.model.save_pretrained(MODEL_FILE)
         train_output = {"labels": self.labels, "model_file": MODEL_FILE}
         return train_output
-
-    def _get_annotated_dataset(self, project_id):
-        """Just for demo purposes: retrieve annotated data from Label Studio API"""
-        download_url = f'{HOSTNAME.rstrip("/")}/api/projects/{project_id}/export'
-        response = requests.get(
-            download_url, headers={"Authorization": f"Token {API_KEY}"}
-        )
-        if response.status_code != 200:
-            raise Exception(
-                f"Can't load task data using {download_url}, "
-                f"response status_code = {response.status_code}"
-            )
-        return json.loads(response.content)
-
-    def _get_text_from_s3(self, url):
-        text = requests.get(url)
-        return text.text
-
-
-class Custom_Dataset(torch.utils.data.dataset.Dataset):
-    def __init__(self, _dataset):
-        self.dataset = _dataset
-
-    def __getitem__(self, index):
-        example, target = self.dataset[0][index], self.dataset[1][index]
-        return {"input_ids": example, "label": target}
-
-    def __len__(self):
-        return len(self.dataset)
