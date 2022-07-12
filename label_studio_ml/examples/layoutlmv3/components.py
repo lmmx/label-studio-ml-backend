@@ -13,6 +13,7 @@ __all__ = [
     "API_KEY",
     "DEVICE",
     "MODEL_FILE",
+    "convert_box_to_value",
     "LayoutBlock",
     "BlockValue",
     "DetectionResult",
@@ -34,8 +35,16 @@ if not API_KEY:
 MODEL_FILE = "my_model"
 
 
+def convert_box_to_value(box: tuple[float, float, float, float]):
+    x1, y1, x2, y2 = box
+    w = x2 - x1
+    h = y2 - y1
+    return x1, y1, w, h
+
+
 class LayoutBlock(TypedDict):
-    label_idx: int
+    box: tuple[float, float, float, float]
+    label: str
     score: float
 
 
@@ -50,19 +59,20 @@ class BlockValue(TypedDict):
 
     @classmethod
     def from_backend(
-        cls, block: LayoutBlock, backend: LabelStudioMLBase, label: str, score: float
+        cls,
+        block: LayoutBlock,
+        backend: LabelStudioMLBase,
     ) -> BlockValue:
-        # TODO: see `convert_block_to_value` to get bbox h,w,x,y
+        box, label, score = block.values()
+        x, y, w, h = convert_box_to_value(box)
         return cls(
-            {
-                "height": ...,
-                "rectanglelabels": [label],
-                "rotation": 0,
-                "width": ...,
-                "x": ...,
-                "y": ...,
-                "score": score,
-            }
+            height=h,
+            rectanglelabels=[label],
+            rotation=0,
+            width=w,
+            x=x,
+            y=y,
+            score=score,
         )
 
 
@@ -81,8 +91,8 @@ class DetectionResult(TypedDict):
         block: LayoutBlock,
         backend: LabelStudioMLBase,
         shape: tuple[int, int],
-        label: str,
-        score: float,
+        # label: str,
+        # score: float,
     ) -> BlockValue:
         height, width = shape[:2]
         return cls(
@@ -93,9 +103,7 @@ class DetectionResult(TypedDict):
                 "original_width": width,
                 "source": backend.detection_source,
                 "type": backend.detection_type,
-                "value": BlockValue.from_backend(
-                    block=block, backend=backend, label=label, score=score
-                ),
+                "value": BlockValue.from_backend(block=block, backend=backend),
             }
         )
 
@@ -103,7 +111,7 @@ class DetectionResult(TypedDict):
 class PredictionResult(TypedDict):
     result: list[DetectionResult]
     task: int
-    score: float
+    # score: float
 
 
 class Custom_Dataset(torch.utils.data.dataset.Dataset):
