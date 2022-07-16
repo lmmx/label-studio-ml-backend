@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 import numpy as np
+from PIL import Image
 
 from label_studio_ml.model import LabelStudioMLBase
 from label_studio_ml.examples.layoutlmv3.components import (
@@ -13,10 +14,7 @@ from label_studio_ml.examples.layoutlmv3.components import (
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-__all__ = ["Image", "make_predictions", "unnormalize_box", "iob_to_label", "process_image"]
-
-Image = Any
-
+__all__ = ["make_predictions", "unnormalize_box", "iob_to_label", "process_image"]
 
 # def detect_image(self, image: Image, backend: LabelStudioMLBase) -> list[LayoutBlock]:
 #     # TODO: change this to HuggingFace style
@@ -36,6 +34,9 @@ def make_predictions(
     images: list[Image],
     task_ids: list[str],
 ):
+    """
+    Called in :meth:`LayoutLMv3Classifier.predict()` with first argument as ``self``.
+    """
     predictions = []
     layouts = [process_image(image, backend=backend) for image in images]
     for image, layout, task_id in zip(images, layouts, task_ids):
@@ -75,6 +76,9 @@ def iob_to_label(label):
 
 
 def process_image(image: Image, backend: LabelStudioMLBase) -> list[LayoutBlock]:
+    """
+    Called in ``make_predictions``.
+    """
     width, height = image.size
     encoding = backend.processor(
         image, truncation=True, return_offsets_mapping=True, return_tensors="pt"

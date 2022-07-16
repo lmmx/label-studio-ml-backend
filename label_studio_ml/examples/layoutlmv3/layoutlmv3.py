@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Type
 
 import torch
@@ -22,7 +23,7 @@ from label_studio_ml.examples.layoutlmv3.components import (
 )
 from label_studio_ml.examples.layoutlmv3.ls_api import get_annotated_dataset
 from label_studio_ml.examples.layoutlmv3.detection import make_predictions
-from label_studio_ml.examples.layoutlmv3.url_utils import load_image_from_url
+from label_studio_ml.examples.layoutlmv3.url_utils import load_image_from_path_or_url
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -84,9 +85,8 @@ class LayoutLMv3Classifier(LabelStudioMLBase):
             logger.error("Couldn't load parsed_label_config", exc_info=True)
         return
 
-    def load_images_from_urls(image_urls: list):
-        # TODO: change this to paths / check how load_image_from_url works in Detectron2
-        return [load_image_from_url(url) for url in image_urls]
+    def load_images_from_urls(image_paths_or_urls: list[Path | str]):
+        return list(map(load_image_from_path_or_url, image_paths_or_urls))
 
     def predict(self, tasks, **kwargs) -> list[PredictionResult]:
         # get data for prediction from tasks
