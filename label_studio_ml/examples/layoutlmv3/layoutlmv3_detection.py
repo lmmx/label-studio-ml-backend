@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import Any
 
@@ -5,7 +7,7 @@ import numpy as np
 from PIL import Image
 
 from label_studio_ml.model import LabelStudioMLBase
-from label_studio_ml.examples.layoutlmv3.components import (
+from layoutlmv3_components import (
     LayoutBlock,
     DetectionResult,
     PredictionResult,

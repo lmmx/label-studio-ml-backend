@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import json
 
 import requests
 
-from label_studio_ml.examples.layoutlmv3.components import HOSTNAME, API_KEY
+from layoutlmv3_components import HOSTNAME, API_KEY
 
 
 __all__ = ["get_annotated_dataset"]
